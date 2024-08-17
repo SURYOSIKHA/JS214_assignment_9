@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 300px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .movies {
+            margin-top: 20px;
+            width: 80%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .movie {
+            background-color: white;
+            border: 1px solid #ddd;
+            margin: 10px;
+            padding: 10px;
+            width: 200px;
+            text-align: center;
+        }
+
+        .movie img {
+            max-width: 100%;
+        }
+
+        .pagination {
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 10px;
+            font-size: 16px;
+            margin: 5px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Movie Search</h1>
+    <form id="searchForm">
+        <input type="text" id="query" placeholder="Enter movie title">
+        <button type="submit">Search</button>
+    </form>
+
+    <div class="movies" id="movies"></div>
+    <div class="pagination" id="pagination"></div>
+
+    <script>
+        const API_KEY = 'http://www.omdbapi.com/?i=tt3896198&apikey=569fde20'; // Replace with your OMDB API key
+        const BASE_URL = 'http://www.omdbapi.com/';
+        let currentPage = 1;
+        let currentQuery = '';
+
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const query = document.getElementById('query').value;
+            currentQuery = query;
+            currentPage = 1;
+            searchMovies(query, currentPage);
+        });
+
+        function searchMovies(query, page) {
+            fetch(`${BASE_URL}?apikey=${API_KEY}&s=${query}&page=${page}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data); // Debugging line to check the returned data
+                    if (data.Response === 'True') {
+                        displayMovies(data.Search);
+                        displayPagination(data.totalResults);
+                    } else {
+                        document.getElementById('movies').innerHTML = '<p>No results found.</p>';
+                        document.getElementById('pagination').innerHTML = '';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error); // Log the error to console
+                    document.getElementById('movies').innerHTML = `<p>An error occurred: ${error.message}</p>`;
+                });
+        }
+
+        function displayMovies(movies) {
+            const moviesContainer = document.getElementById('movies');
+            moviesContainer.innerHTML = '';
+            movies.forEach(movie => {
+                const movieElement = document.createElement('div');
+                movieElement.classList.add('movie');
+                movieElement.innerHTML = `
+                    <img src="${movie.Poster !== 'N/A' ? movie.Poster : 'placeholder.jpg'}" alt="${movie.Title}">
+                    <h3>${movie.Title}</h3>
+                    <p>${movie.Year}</p>
+                `;
+                moviesContainer.appendChild(movieElement);
+            });
+        }
+
+        function displayPagination(totalResults) {
+            const paginationContainer = document.getElementById('pagination');
+            paginationContainer.innerHTML = '';
+
+            const totalPages = Math.ceil(totalResults / 10);
+
+            if (currentPage > 1) {
+                const prevButton = document.createElement('button');
+                prevButton.textContent = 'Previous';
+                prevButton.addEventListener('click', () => {
+                    currentPage--;
+                    searchMovies(currentQuery, currentPage);
+                });
+                paginationContainer.appendChild(prevButton);
+            }
+
+            if (currentPage < totalPages) {
+                const nextButton = document.createElement('button');
+                nextButton.textContent = 'Next';
+                nextButton.addEventListener('click', () => {
+                    currentPage++;
+                    searchMovies(currentQuery, currentPage);
+                });
+                paginationContainer.appendChild(nextButton);
+            }
+        }
+    </script>
+</body>
+</html>

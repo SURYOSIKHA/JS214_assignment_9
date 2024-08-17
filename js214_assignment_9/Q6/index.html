@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Data Fetcher</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        #container {
+            margin-bottom: 20px;
+        }
+
+        #container button {
+            padding: 10px 15px;
+            margin-right: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        #container button:hover {
+            background-color: #45a049;
+        }
+
+        #output {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .meal-card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            width: 200px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+            transition: 0.3s;
+        }
+
+        .meal-card img {
+            width: 100%;
+            height: auto;
+        }
+
+        .meal-card div {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .meal-card:hover {
+            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <button id="get-category-data">Get Category Data</button>
+        <button id="get-ingredient-data">Get Ingredient Data</button>
+    </div>
+    <div id="output"></div>
+
+    <script>
+        // Function to fetch category data
+        async function getCategoriesData() {
+            try {
+                const response = await fetch('https://www.themealdb.com/api/json/v1/1/filter.php?c=Seafood');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                displayData(data); // Display data in the webpage
+            } catch (error) {
+                console.error('Something went wrong:', error);
+                document.getElementById('output').innerText = 'Failed to fetch category data.';
+            }
+        }
+
+        // Function to fetch ingredient data
+        async function getIngredientData() {
+            try {
+                const response = await fetch('https://www.themealdb.com/api/json/v1/1/filter.php?i=chicken_breast');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                displayData(data); // Display data in the webpage
+            } catch (error) {
+                console.error('Something went wrong:', error);
+                document.getElementById('output').innerText = 'Failed to fetch ingredient data.';
+            }
+        }
+
+        // Function to display data in the webpage
+        function displayData(data) {
+            const output = document.getElementById('output');
+            output.innerHTML = ''; // Clear any previous data
+
+            // Format and display the fetched data
+            data.meals.forEach(meal => {
+                const mealCard = document.createElement('div');
+                mealCard.className = 'meal-card';
+
+                const mealImage = document.createElement('img');
+                mealImage.src = meal.strMealThumb;
+                mealImage.alt = meal.strMeal;
+
+                const mealName = document.createElement('div');
+                mealName.innerText = meal.strMeal;
+
+                mealCard.appendChild(mealImage);
+                mealCard.appendChild(mealName);
+                output.appendChild(mealCard);
+            });
+        }
+
+        // Add event listeners to buttons
+        document.getElementById('get-category-data').addEventListener('click', getCategoriesData);
+        document.getElementById('get-ingredient-data').addEventListener('click', getIngredientData);
+    </script>
+</body>
+</html>
